@@ -1,0 +1,1640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mutation Tests as Steering Signals for Agentic Coding Agents — Review Article</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;1,8..60,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #1a1a1a;
+    --paper: #faf9f6;
+    --cream: #f0ebe0;
+    --gold: #c9a84c;
+    --gold-dim: #7a6a4a;
+    --rule: #e0dbd0;
+    --muted: #666;
+    --sidebar-w: 230px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Source Serif 4', Georgia, serif;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  .journal-header {
+    background: var(--ink);
+    color: #f5f0e8;
+    padding: 3rem 3rem 2.2rem;
+    border-bottom: 4px solid var(--gold);
+    position: relative;
+    overflow: hidden;
+  }
+  .journal-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      -55deg, transparent, transparent 40px,
+      rgba(201,168,76,0.04) 40px, rgba(201,168,76,0.04) 41px
+    );
+    pointer-events: none;
+  }
+  .journal-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.8rem;
+  }
+  .paper-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.4rem, 4vw, 2.4rem);
+    line-height: 1.18;
+    max-width: 820px;
+    font-weight: 700;
+  }
+  .paper-subtitle {
+    font-size: 1rem;
+    color: #a09880;
+    margin-top: 0.7rem;
+    font-style: italic;
+    font-weight: 300;
+  }
+  .meta-row {
+    display: flex;
+    gap: 2rem;
+    margin-top: 1.8rem;
+    flex-wrap: wrap;
+    padding-top: 1.2rem;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+  .meta-item { font-size: 0.72rem; letter-spacing: 0.1em; color: #888; text-transform: uppercase; }
+  .meta-item span { color: var(--gold); font-weight: 700; }
+
+  /* ── MOBILE TOP NAV BAR ── */
+  .mobile-nav-bar {
+    display: none;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--ink);
+    border-bottom: 3px solid var(--gold);
+    padding: 0 1rem;
+    align-items: center;
+    justify-content: space-between;
+    height: 52px;
+  }
+  .mobile-nav-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.78rem;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 70%;
+  }
+  .hamburger {
+    background: none;
+    border: 1.5px solid var(--gold);
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 6px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .hamburger span {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: var(--gold);
+    border-radius: 2px;
+    transition: all 0.2s;
+  }
+
+  /* ── MOBILE DRAWER ── */
+  .mobile-drawer {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+  }
+  .mobile-drawer.open { display: block; }
+  .drawer-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+  }
+  .drawer-panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: min(85vw, 300px);
+    background: var(--ink);
+    padding: 2rem 1.4rem;
+    overflow-y: auto;
+    border-right: 3px solid var(--gold);
+  }
+  .drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .drawer-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .drawer-close {
+    background: none;
+    border: none;
+    color: #aaa;
+    font-size: 1.5rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 4px;
+  }
+  .drawer-nav-item {
+    display: block;
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.95rem;
+    color: #ccc;
+    padding: 0.7rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    line-height: 1.4;
+    transition: background 0.15s, color 0.15s;
+    margin-bottom: 2px;
+  }
+  .drawer-nav-item:hover, .drawer-nav-item.active {
+    background: rgba(201,168,76,0.15);
+    color: var(--gold);
+  }
+  .drawer-nav-item.active { font-weight: 700; }
+
+  /* ── DESKTOP LAYOUT ── */
+  .layout {
+    display: flex;
+    max-width: 1240px;
+    margin: 0 auto;
+  }
+
+  /* ── DESKTOP SIDEBAR ── */
+  .sidebar {
+    width: var(--sidebar-w);
+    min-width: var(--sidebar-w);
+    padding: 2.2rem 1.4rem 2.2rem 1.8rem;
+    border-right: 1px solid var(--rule);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    background: var(--paper);
+  }
+  .sidebar-label {
+    font-size: 0.62rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #aaa;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .nav-item {
+    display: block;
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.83rem;
+    color: #555;
+    padding: 0.5rem 0.8rem;
+    border-radius: 3px;
+    cursor: pointer;
+    text-decoration: none;
+    line-height: 1.4;
+    transition: background 0.15s, color 0.15s;
+    margin-bottom: 1px;
+  }
+  .nav-item:hover { background: var(--cream); color: var(--ink); }
+  .nav-item.active { background: var(--ink); color: var(--gold); font-weight: 700; }
+  .sidebar-footer {
+    margin-top: 2rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid var(--rule);
+    font-size: 0.72rem;
+    color: #aaa;
+    line-height: 1.6;
+  }
+
+  /* ── CONTENT ── */
+  .content {
+    flex: 1;
+    padding: 3rem 3.5rem;
+    max-width: 860px;
+  }
+
+  /* Desktop: tab-based, show only active section */
+  .desktop-only section { display: none; animation: fadeIn 0.25s ease; }
+  .desktop-only section.active { display: block; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  /* ── TYPOGRAPHY ── */
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.7rem;
+    color: var(--ink);
+    margin: 0 0 1.4rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 2px solid var(--rule);
+  }
+  h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.18rem;
+    color: #2a2a2a;
+    margin: 2rem 0 0.7rem;
+  }
+  h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.9rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 0.9rem;
+  }
+  p {
+    font-size: 1.04rem;
+    line-height: 1.85;
+    color: #2a2a2a;
+    margin-bottom: 1.15rem;
+    font-weight: 300;
+  }
+  ul, ol { padding-left: 1.5rem; margin-bottom: 1.1rem; }
+  li { font-size: 1rem; line-height: 1.8; color: #2a2a2a; margin-bottom: 0.35rem; font-weight: 300; }
+  code {
+    font-family: 'Courier New', monospace;
+    font-size: 0.88em;
+    background: var(--cream);
+    padding: 0.1em 0.35em;
+    border-radius: 2px;
+    color: #4a3a1a;
+  }
+
+  /* ── COMPONENTS ── */
+  .abstract-box {
+    background: var(--cream);
+    border-left: 4px solid var(--gold);
+    padding: 1.6rem 2rem;
+    margin-bottom: 1.6rem;
+    border-radius: 0 6px 6px 0;
+  }
+  .abstract-box p { font-style: italic; margin: 0; font-size: 0.98rem; }
+  .keywords { font-size: 0.83rem; color: var(--muted); margin-top: 1rem; line-height: 1.7; }
+  .keywords strong { color: var(--ink); text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.75rem; }
+
+  .callout {
+    background: var(--ink);
+    color: #f5f0e8;
+    padding: 1.5rem 2rem;
+    margin: 2rem 0;
+    border-radius: 5px;
+    position: relative;
+  }
+  .callout::before {
+    content: '\201C';
+    font-family: 'Playfair Display', serif;
+    font-size: 5rem;
+    color: var(--gold);
+    opacity: 0.3;
+    position: absolute;
+    top: -0.5rem;
+    left: 1rem;
+    line-height: 1;
+  }
+  .callout p { color: #d4c9b0; font-style: italic; font-size: 0.98rem; margin: 0; padding-left: 1rem; }
+  .callout cite { display: block; font-size: 0.77rem; color: #888; margin-top: 0.6rem; padding-left: 1rem; font-style: normal; letter-spacing: 0.05em; }
+
+  .data-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1.8rem 0; }
+  .data-card { background: #fff; border: 1px solid var(--rule); padding: 1.4rem; border-radius: 7px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+  .data-card .num { font-family: 'Playfair Display', serif; font-size: 2.2rem; color: var(--gold); font-weight: 700; line-height: 1; }
+  .data-card .label { font-size: 0.73rem; color: var(--muted); margin-top: 0.4rem; letter-spacing: 0.04em; text-transform: uppercase; line-height: 1.5; }
+
+  .tool-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin: 1.8rem 0; }
+  .tool-card { background: #fff; border: 1px solid var(--rule); padding: 1.2rem 1.4rem; border-radius: 7px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+  .tool-card .name { font-family: 'Playfair Display', serif; font-size: 1.05rem; font-weight: 700; color: var(--ink); }
+  .tool-card .desc { font-size: 0.84rem; color: #555; margin-top: 0.4rem; line-height: 1.55; }
+  .tag { display: inline-block; font-size: 0.67rem; letter-spacing: 0.07em; text-transform: uppercase; background: var(--cream); color: var(--gold-dim); padding: 0.18rem 0.55rem; border-radius: 2px; margin-right: 0.35rem; margin-top: 0.5rem; }
+
+  .pro-con { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.8rem 0; }
+  .pro-box, .con-box { padding: 1.3rem 1.4rem; border-radius: 0 0 7px 7px; }
+  .pro-box { background: #f0f7f0; border-top: 4px solid #4a8a5a; }
+  .con-box { background: #faf0f0; border-top: 4px solid #8a4a4a; }
+  .pro-box h4 { color: #2a6a3a; }
+  .con-box h4 { color: #6a2a2a; }
+  .pro-box li, .con-box li { font-size: 0.9rem; }
+
+  .ref { font-size: 0.84rem; color: #555; line-height: 1.65; margin-bottom: 0.6rem; padding-left: 1.6rem; text-indent: -1.6rem; }
+
+  .step-list { padding-left: 0; list-style: none; counter-reset: steps; }
+  .step-list li { counter-increment: steps; padding-left: 2.2rem; position: relative; margin-bottom: 0.6rem; }
+  .step-list li::before {
+    content: counter(steps);
+    position: absolute; left: 0; top: 0.1em;
+    width: 1.4rem; height: 1.4rem;
+    background: var(--ink); color: var(--gold);
+    border-radius: 50%; font-size: 0.72rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif;
+  }
+
+  /* ══════════════════════════════════════════
+     TEST LANDSCAPE COMPARISON SECTION
+  ══════════════════════════════════════════ */
+  .test-compare-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.9rem;
+    margin: 1.6rem 0;
+  }
+  .tc-card {
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    cursor: pointer;
+    transition: box-shadow 0.2s, transform 0.15s;
+  }
+  .tc-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); transform: translateY(-2px); }
+  .tc-card.selected { outline: 2.5px solid var(--gold); }
+  .tc-header {
+    padding: 0.9rem 1rem 0.7rem;
+    display: flex; align-items: center; gap: 0.6rem;
+  }
+  .tc-icon { font-size: 1.4rem; line-height: 1; }
+  .tc-name { font-family: 'Playfair Display', serif; font-size: 0.95rem; font-weight: 700; color: var(--ink); }
+  .tc-bar {
+    height: 4px;
+    background: var(--rule);
+    margin: 0 1rem 0.8rem;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .tc-bar-fill { height: 100%; border-radius: 2px; transition: width 0.5s ease; }
+  .tc-meta { padding: 0 1rem 1rem; font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
+
+  .tc-detail-panel {
+    background: var(--ink);
+    color: #f0ebe0;
+    border-radius: 8px;
+    padding: 1.6rem 1.8rem;
+    margin-top: 0.5rem;
+    display: none;
+  }
+  .tc-detail-panel.visible { display: block; animation: fadeIn 0.2s ease; }
+  .tc-detail-panel h4 { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--gold); margin-bottom: 1rem; }
+  .tc-detail-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+  .tc-detail-col { font-size: 0.83rem; line-height: 1.6; color: #ccc; }
+  .tc-detail-col strong { display: block; font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.3rem; }
+  .tc-signal-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; }
+  .tc-signal-pill {
+    font-size: 0.72rem; padding: 0.2rem 0.7rem; border-radius: 20px;
+    letter-spacing: 0.04em;
+  }
+  .pill-green { background: rgba(74,138,90,0.25); color: #8fcf9f; border: 1px solid rgba(74,138,90,0.4); }
+  .pill-amber { background: rgba(201,168,76,0.2); color: #d4b86a; border: 1px solid rgba(201,168,76,0.35); }
+  .pill-red   { background: rgba(138,74,74,0.25); color: #cf8f8f; border: 1px solid rgba(138,74,74,0.4); }
+
+  /* ══════════════════════════════════════════
+     INTERACTIVE SECTION SHARED STYLES
+  ══════════════════════════════════════════ */
+  .interactive-section {
+    background: linear-gradient(135deg, #f5f0e6 0%, #faf9f6 100%);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    padding: 1.8rem;
+    margin: 2rem 0;
+  }
+  .interactive-section + .interactive-section { margin-top: 2.5rem; }
+  .ix-label {
+    font-size: 0.65rem; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--gold-dim); margin-bottom: 0.4rem; font-family: 'Source Serif 4', serif;
+  }
+  .ix-title { font-family: 'Playfair Display', serif; font-size: 1.25rem; color: var(--ink); margin-bottom: 0.5rem; }
+  .ix-desc { font-size: 0.9rem; color: #555; line-height: 1.65; margin-bottom: 1.4rem; font-weight: 300; }
+  .ix-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--ink); color: var(--gold);
+    border: none; border-radius: 5px; padding: 0.55rem 1.2rem;
+    font-family: 'Playfair Display', serif; font-size: 0.9rem; font-weight: 700;
+    cursor: pointer; transition: background 0.15s, transform 0.1s;
+  }
+  .ix-btn:hover { background: #333; transform: translateY(-1px); }
+  .ix-btn:active { transform: none; }
+  .ix-btn.secondary {
+    background: transparent; color: var(--ink);
+    border: 1.5px solid var(--rule);
+  }
+  .ix-btn.secondary:hover { background: var(--cream); }
+  .ix-btn-row { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 1rem; }
+
+  /* ── DEMO 1: Coverage vs Mutation ── */
+  .cvm-container { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin: 1.2rem 0; }
+  .cvm-panel { background: #fff; border-radius: 8px; padding: 1.2rem; border: 1px solid var(--rule); }
+  .cvm-panel-title { font-family: 'Playfair Display', serif; font-size: 0.95rem; font-weight: 700; margin-bottom: 1rem; text-align: center; }
+  .cvm-code { font-family: 'Courier New', monospace; font-size: 0.8rem; line-height: 1.7; background: #1a1a1a; color: #e8e0d0; border-radius: 6px; padding: 1rem; margin-bottom: 1rem; white-space: pre; overflow-x: auto; }
+  .cvm-code .hl-covered { background: rgba(74,138,90,0.35); color: #9fe09f; border-radius: 2px; }
+  .cvm-code .hl-mutant  { background: rgba(201,76,76,0.45); color: #ff9090; border-radius: 2px; text-decoration: line-through; }
+  .cvm-code .hl-new     { background: rgba(201,168,76,0.4); color: #e8c96a; border-radius: 2px; }
+  .cvm-metric { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.5rem; }
+  .cvm-metric-label { font-size: 0.78rem; color: var(--muted); width: 120px; flex-shrink: 0; }
+  .cvm-meter { flex: 1; height: 12px; background: var(--rule); border-radius: 6px; overflow: hidden; }
+  .cvm-fill { height: 100%; border-radius: 6px; transition: width 0.7s ease; }
+  .cvm-fill.green { background: #4a8a5a; }
+  .cvm-fill.gold  { background: var(--gold); }
+  .cvm-fill.red   { background: #c94c4c; }
+  .cvm-pct { font-family: 'Playfair Display', serif; font-size: 0.95rem; font-weight: 700; min-width: 3rem; text-align: right; }
+  .cvm-verdict { margin-top: 0.8rem; padding: 0.6rem 0.9rem; border-radius: 5px; font-size: 0.82rem; line-height: 1.5; font-weight: 400; }
+  .cvm-verdict.good { background: rgba(74,138,90,0.12); color: #2a6a3a; border: 1px solid rgba(74,138,90,0.3); }
+  .cvm-verdict.bad  { background: rgba(201,76,76,0.1);  color: #8a2a2a; border: 1px solid rgba(201,76,76,0.25); }
+  .cvm-verdict.fixed{ background: rgba(201,168,76,0.12);color: #5a4a1a; border: 1px solid rgba(201,168,76,0.3); }
+  @media(max-width:700px){ .cvm-container{grid-template-columns:1fr;} }
+
+  /* ── DEMO 2: Spot the Mutant Quiz ── */
+  .quiz-code-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; }
+  .quiz-code-box { background: #1a1a1a; border-radius: 6px; padding: 1rem; }
+  .quiz-code-box pre { font-family: 'Courier New', monospace; font-size: 0.8rem; line-height: 1.7; color: #e8e0d0; white-space: pre-wrap; }
+  .quiz-code-box .quiz-label { font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: #888; margin-bottom: 0.5rem; display: block; }
+  .quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; margin: 1rem 0; }
+  .quiz-opt {
+    background: #fff; border: 2px solid var(--rule); border-radius: 6px;
+    padding: 0.7rem 1rem; font-family: 'Source Serif 4', serif; font-size: 0.88rem;
+    cursor: pointer; text-align: left; color: var(--ink); line-height: 1.4;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .quiz-opt:hover:not(:disabled) { border-color: var(--gold); background: #fffbf0; }
+  .quiz-opt.correct { border-color: #4a8a5a; background: rgba(74,138,90,0.1); color: #2a6a3a; }
+  .quiz-opt.wrong   { border-color: #c94c4c; background: rgba(201,76,76,0.08); color: #8a2a2a; }
+  .quiz-opt:disabled { cursor: default; }
+  .quiz-feedback { padding: 0.8rem 1rem; border-radius: 6px; font-size: 0.88rem; line-height: 1.6; display: none; }
+  .quiz-feedback.show { display: block; animation: fadeIn 0.2s; }
+  .quiz-score { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; }
+  @media(max-width:600px){ .quiz-code-compare{grid-template-columns:1fr;} .quiz-options{grid-template-columns:1fr;} }
+
+  /* ── DEMO 3: Agentic Loop Simulator ── */
+  .loop-track { display: flex; align-items: flex-start; gap: 0; margin: 1.2rem 0; position: relative; overflow-x: auto; padding-bottom: 0.5rem; }
+  .loop-step {
+    display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
+    min-width: 90px; position: relative; flex: 1;
+  }
+  .loop-step:not(:last-child)::after {
+    content: '→';
+    position: absolute; right: -10px; top: 22px;
+    font-size: 1.1rem; color: var(--rule); z-index: 1;
+    transition: color 0.3s;
+  }
+  .loop-step.done:not(:last-child)::after { color: var(--gold); }
+  .loop-dot {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--rule); color: #aaa;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; transition: background 0.4s, color 0.3s;
+    border: 2px solid transparent;
+  }
+  .loop-step.active .loop-dot { background: var(--gold); color: var(--ink); border-color: #a07820; }
+  .loop-step.done   .loop-dot { background: #1a1a1a; color: var(--gold); }
+  .loop-step-label { font-size: 0.72rem; color: var(--muted); text-align: center; line-height: 1.3; }
+  .loop-step.active .loop-step-label { color: var(--ink); font-weight: 700; }
+  .loop-step.done   .loop-step-label { color: #1a1a1a; }
+  .loop-detail {
+    background: #1a1a1a; color: #e8e0d0; border-radius: 8px;
+    padding: 1.2rem 1.4rem; margin-top: 0.5rem; min-height: 80px;
+    font-family: 'Courier New', monospace; font-size: 0.82rem; line-height: 1.7;
+  }
+  .loop-detail .ld-comment { color: #888; }
+  .loop-detail .ld-key     { color: var(--gold); }
+  .loop-detail .ld-val     { color: #9fe0cf; }
+  .loop-detail .ld-warn    { color: #ff9090; }
+  .loop-detail .ld-ok      { color: #9fe09f; }
+  .loop-iteration { font-size: 0.78rem; color: var(--muted); margin-top: 0.6rem; text-align: right; }
+
+  /* ── DEMO 4: Score Hallucination ── */
+  .hall-terminal {
+    background: #0d1117; border-radius: 8px; padding: 1.2rem 1.4rem;
+    font-family: 'Courier New', monospace; font-size: 0.82rem; line-height: 1.8;
+    color: #c9d1d9; margin: 1rem 0; min-height: 120px;
+    border: 1px solid #30363d;
+  }
+  .hall-terminal .t-prompt { color: #79c0ff; }
+  .hall-terminal .t-cmd    { color: #e6edf3; }
+  .hall-terminal .t-agent  { color: #7ee787; }
+  .hall-terminal .t-tool   { color: #ffa657; }
+  .hall-terminal .t-warn   { color: #f85149; font-weight: bold; }
+  .hall-terminal .t-muted  { color: #484f58; }
+  .hall-compare {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0;
+  }
+  .hall-box { border-radius: 7px; padding: 1.1rem 1.3rem; }
+  .hall-box.agent-says { background: rgba(74,138,90,0.1); border: 1.5px solid rgba(74,138,90,0.4); }
+  .hall-box.tool-says  { background: rgba(201,76,76,0.08); border: 1.5px solid rgba(201,76,76,0.3); }
+  .hall-box-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem; font-weight: 700; }
+  .hall-box.agent-says .hall-box-label { color: #4a8a5a; }
+  .hall-box.tool-says  .hall-box-label { color: #c94c4c; }
+  .hall-score { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; line-height: 1; }
+  .hall-box.agent-says .hall-score { color: #4a8a5a; }
+  .hall-box.tool-says  .hall-score { color: #c94c4c; }
+  .hall-sub { font-size: 0.8rem; color: var(--muted); margin-top: 0.3rem; line-height: 1.4; }
+  @media(max-width:600px){ .hall-compare{grid-template-columns:1fr;} }
+
+  /* ── DEMO 5: Equivalent Mutant Classifier ── */
+  .eq-card {
+    background: #fff; border: 2px solid var(--rule); border-radius: 8px;
+    padding: 1.2rem; margin-bottom: 0.8rem; transition: border-color 0.2s;
+  }
+  .eq-card.revealed-kill { border-color: #4a8a5a; }
+  .eq-card.revealed-equiv { border-color: #c9a84c; }
+  .eq-card-code { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin: 0.6rem 0; }
+  .eq-snippet { background: #1a1a1a; border-radius: 5px; padding: 0.7rem 0.9rem; }
+  .eq-snippet pre { font-family: 'Courier New', monospace; font-size: 0.78rem; color: #e8e0d0; white-space: pre-wrap; line-height: 1.6; }
+  .eq-snippet .snip-label { font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; color: #666; margin-bottom: 0.3rem; display: block; }
+  .eq-btn-row { display: flex; gap: 0.6rem; }
+  .eq-vote {
+    flex: 1; padding: 0.5rem; border-radius: 5px; border: 1.5px solid var(--rule);
+    font-family: 'Source Serif 4', serif; font-size: 0.85rem; cursor: pointer;
+    background: #fff; transition: all 0.15s;
+  }
+  .eq-vote:hover:not(:disabled) { background: var(--cream); }
+  .eq-vote.kill-btn:hover:not(:disabled)  { border-color: #4a8a5a; color: #2a6a3a; }
+  .eq-vote.equiv-btn:hover:not(:disabled) { border-color: #c9a84c; color: #5a4a1a; }
+  .eq-vote:disabled { opacity: 0.5; cursor: default; }
+  .eq-reveal { margin-top: 0.7rem; padding: 0.7rem 0.9rem; border-radius: 5px; font-size: 0.84rem; line-height: 1.6; display: none; }
+  .eq-reveal.show { display: block; animation: fadeIn 0.2s; }
+  .eq-reveal.kill-result  { background: rgba(74,138,90,0.1);  color: #2a6a3a; border: 1px solid rgba(74,138,90,0.3); }
+  .eq-reveal.equiv-result { background: rgba(201,168,76,0.1); color: #5a4a1a; border: 1px solid rgba(201,168,76,0.3); }
+  .eq-tally { font-family: 'Playfair Display', serif; font-size: 0.95rem; color: var(--muted); margin-top: 0.8rem; text-align: center; }
+  @media(max-width:600px){ .eq-card-code{grid-template-columns:1fr;} }
+
+  /* ── SECTION DIVIDERS on mobile (all sections visible) ── */
+  .mobile-section-divider {
+    display: none;
+    height: 3px;
+    background: linear-gradient(to right, var(--gold), transparent);
+    margin: 2.5rem 0 2rem;
+    border-radius: 2px;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 860px) {
+    /* Show mobile nav bar */
+    .mobile-nav-bar { display: flex; }
+
+    /* Hide desktop sidebar */
+    .sidebar { display: none; }
+
+    /* Content padding */
+    .content { padding: 1.8rem 1.2rem 3rem; }
+
+    /* On mobile: ALL sections visible (scroll instead of tabs) */
+    .desktop-only section { display: block !important; animation: none; }
+
+    /* Show section dividers */
+    .mobile-section-divider { display: block; }
+
+    /* Grid adjustments */
+    .data-row { grid-template-columns: 1fr 1fr; }
+    .pro-con { grid-template-columns: 1fr; }
+    .tool-grid { grid-template-columns: 1fr; }
+
+    h2 { font-size: 1.4rem; }
+    h3 { font-size: 1.05rem; }
+    p { font-size: 0.97rem; }
+    .journal-header { padding: 1.8rem 1.2rem 1.4rem; }
+    .callout { padding: 1.2rem 1.2rem 1.2rem 1.6rem; }
+  }
+
+  @media (max-width: 480px) {
+    .data-row { grid-template-columns: 1fr; }
+    .paper-title { font-size: 1.3rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<!-- ── MOBILE NAV BAR ── -->
+<div class="mobile-nav-bar">
+  <span class="mobile-nav-title">Mutation Testing Review</span>
+  <button class="hamburger" onclick="openDrawer()" aria-label="Open navigation">
+    <span></span><span></span><span></span>
+  </button>
+</div>
+
+<!-- ── MOBILE DRAWER ── -->
+<div class="mobile-drawer" id="mobileDrawer">
+  <div class="drawer-overlay" onclick="closeDrawer()"></div>
+  <div class="drawer-panel">
+    <div class="drawer-header">
+      <span class="drawer-label">Contents</span>
+      <button class="drawer-close" onclick="closeDrawer()">&#215;</button>
+    </div>
+    <a class="drawer-nav-item" href="#abstract"        onclick="scrollToSection('abstract');closeDrawer();return false;">Abstract</a>
+    <a class="drawer-nav-item" href="#introduction"    onclick="scrollToSection('introduction');closeDrawer();return false;">1. Introduction</a>
+    <a class="drawer-nav-item" href="#background"      onclick="scrollToSection('background');closeDrawer();return false;">2. Background</a>
+    <a class="drawer-nav-item" href="#test-landscape"  onclick="scrollToSection('test-landscape');closeDrawer();return false;">3. Testing Landscape</a>
+    <a class="drawer-nav-item" href="#mutation-signal" onclick="scrollToSection('mutation-signal');closeDrawer();return false;">4. Mutation as Signal</a>
+    <a class="drawer-nav-item" href="#evidence"        onclick="scrollToSection('evidence');closeDrawer();return false;">5. Evidence &amp; Tools</a>
+    <a class="drawer-nav-item" href="#interactive"     onclick="scrollToSection('interactive');closeDrawer();return false;">6. ✦ Interactive Lab</a>
+    <a class="drawer-nav-item" href="#limitations"     onclick="scrollToSection('limitations');closeDrawer();return false;">7. Limitations</a>
+    <a class="drawer-nav-item" href="#future"          onclick="scrollToSection('future');closeDrawer();return false;">8. Future Directions</a>
+    <a class="drawer-nav-item" href="#conclusion"      onclick="scrollToSection('conclusion');closeDrawer();return false;">9. Conclusion</a>
+  </div>
+</div>
+
+<header class="journal-header">
+  <div class="journal-name">Journal of Agentic Software Engineering &nbsp;·&nbsp; Review Article &nbsp;·&nbsp; March 2026</div>
+  <h1 class="paper-title">Mutation Tests as Steering Signals for Agentic Coding Agents</h1>
+  <p class="paper-subtitle">A critical review of usefulness, mechanisms, limitations, and emerging practice</p>
+  <div class="meta-row">
+    <div class="meta-item">Type: <span>Review</span></div>
+    <div class="meta-item">Domain: <span>SE / AI Agents</span></div>
+    <div class="meta-item">Pages: <span>8</span></div>
+    <div class="meta-item">Status: <span>Current · March 2026</span></div>
+  </div>
+</header>
+
+<!-- ── BODY ── -->
+<div class="layout desktop-only">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-label">Contents</div>
+    <a class="nav-item active" href="#abstract"          onclick="show('abstract',this)">Abstract</a>
+    <a class="nav-item"       href="#introduction"      onclick="show('introduction',this)">1. Introduction</a>
+    <a class="nav-item"       href="#background"        onclick="show('background',this)">2. Background</a>
+    <a class="nav-item"       href="#test-landscape"    onclick="show('test-landscape',this)">3. Testing Landscape</a>
+    <a class="nav-item"       href="#mutation-signal"   onclick="show('mutation-signal',this)">4. Mutation as Signal</a>
+    <a class="nav-item"       href="#evidence"          onclick="show('evidence',this)">5. Evidence &amp; Tools</a>
+    <a class="nav-item"       href="#interactive"       onclick="show('interactive',this)" style="color:var(--gold)">6. ✦ Interactive Lab</a>
+    <a class="nav-item"       href="#limitations"       onclick="show('limitations',this)">7. Limitations</a>
+    <a class="nav-item"       href="#future"            onclick="show('future',this)">8. Future Directions</a>
+    <a class="nav-item"       href="#conclusion"        onclick="show('conclusion',this)">9. Conclusion</a>
+    <div class="sidebar-footer">
+      Mutation Testing · Agentic Coding · LLM Agents · Software Quality<br><br>
+      © 2026 Review Authors
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="content">
+
+    <!-- ABSTRACT -->
+    <section id="abstract" class="active">
+      <h2>Abstract</h2>
+      <div class="abstract-box">
+        <p>Agentic coding systems — autonomous AI agents that write, test, and refactor software with minimal human oversight — are rapidly maturing. Yet the quality of their outputs remains uneven, with AI-generated code correlated with a significant rise in production incidents. This review examines mutation testing as a promising, underutilised steering mechanism for such agents: a technique that systematically injects small faults into code and measures whether tests detect them. We survey the theoretical basis for mutation-guided feedback loops, review emerging tools (MutGen, Mutahunter, MIST-RL, Stryker-agent integrations), discuss empirical evidence, and identify key limitations — including computational cost, equivalent mutants, and agent hallucination of scores. We conclude that mutation testing represents a meaningfully superior quality signal to code coverage alone, but practical integration into agentic pipelines requires careful design to avoid false confidence and runaway compute.</p>
+      </div>
+      <div class="keywords">
+        <strong>Keywords:</strong> mutation testing &nbsp;·&nbsp; agentic coding &nbsp;·&nbsp; test-driven development &nbsp;·&nbsp; LLM agents &nbsp;·&nbsp; software quality &nbsp;·&nbsp; feedback loops &nbsp;·&nbsp; MutGen &nbsp;·&nbsp; Stryker &nbsp;·&nbsp; MIST-RL
+      </div>
+    </section>
+
+    <!-- INTRODUCTION -->
+    <div class="mobile-section-divider"></div>
+    <section id="introduction">
+      <h2>1. Introduction</h2>
+      <p>The software development landscape has entered what practitioners are calling the <em>Agentic Epoch</em> — a period in which AI systems do not merely assist developers but autonomously plan, generate, test, and ship code. Tools like GitHub Copilot, Cursor, and Devin have compressed development timescales by factors of five to ten. Yet this acceleration carries a quality tax: according to recent industry surveys, production incidents from AI-generated code have increased by 43% year-over-year.</p>
+      <p>This tension — speed versus correctness — is the central problem this review addresses. How can an autonomous agent know whether the code it has written is <em>actually correct</em>, not merely syntactically valid and passing its own generated tests? The agent's ability to self-evaluate is the crux of reliable autonomous operation.</p>
+      <p>Traditional code coverage is the most common metric used to signal test adequacy. An agent that aims for 80% line coverage has an objective, machine-readable target. However, a well-established body of research demonstrates that high line coverage does not reliably correlate with defect detection capability. A test that executes a branch without asserting anything useful will satisfy a coverage tool but catch nothing.</p>
+      <p>Mutation testing offers a more demanding alternative. By automatically introducing small, realistic faults — "mutants" — into the source code and checking whether the test suite detects them, mutation analysis yields a <em>mutation score</em> that directly measures test effectiveness. This review asks: is this signal useful enough, and cheap enough, to steer agentic coding loops in practice?</p>
+
+      <div class="callout">
+        <p>"Code quality tools are helpful to humans, but coding agents benefit even more. Mutation testing shows new promise as we use AI to write more software."</p>
+        <cite>— TestDouble Engineering, December 2025</cite>
+      </div>
+    </section>
+
+    <!-- BACKGROUND -->
+    <div class="mobile-section-divider"></div>
+    <section id="background">
+      <h2>2. Background</h2>
+      <h3>2.1 Mutation Testing: A Primer</h3>
+      <p>Mutation testing was first proposed by DeMillo, Lipton and Sayward in 1978. The core idea is simple: take a working program, apply a small syntactic transformation (a <em>mutation operator</em>) to produce a slightly altered version (a <em>mutant</em>), run the test suite against that mutant, and check whether any test fails. If no test fails, the mutant has <em>survived</em> — a sign that the test suite has a blind spot. Typical mutation operators include:</p>
+      <ul>
+        <li><strong>Arithmetic operator replacement</strong> — changing <code>+</code> to <code>−</code></li>
+        <li><strong>Relational operator replacement</strong> — changing <code>≥</code> to <code>&gt;</code></li>
+        <li><strong>Logical connector replacement</strong> — changing <code>&amp;&amp;</code> to <code>||</code></li>
+        <li><strong>Statement deletion</strong> — removing a return or assignment statement</li>
+        <li><strong>Constant replacement</strong> — substituting a literal with 0, −1, or null</li>
+      </ul>
+      <p>The <em>mutation score</em> is the fraction of non-equivalent mutants killed by the test suite. Scores above 80% are generally considered indicative of strong test suites, though thresholds vary by domain and application criticality.</p>
+
+      <h3>2.2 The Rise of Agentic Coding</h3>
+      <p>Agentic coding describes systems that go beyond code completion — they plan tasks, invoke tools (compilers, test runners, linters), interpret feedback, and iterate autonomously. The feedback loop is the heart of the agentic paradigm: an agent writes code, observes the result of running it, and decides what to do next.</p>
+      <p>Simon Willison, in his widely-read <em>Agentic Engineering Patterns</em> guide, identifies red/green TDD as a "fantastic fit" for coding agents precisely because it gives agents an unambiguous criterion for success: a test either passes or it does not. This eliminates the ambiguity that plagues natural-language task completion.</p>
+
+      <div class="data-row">
+        <div class="data-card">
+          <div class="num">43%</div>
+          <div class="label">Rise in production incidents from AI-generated code, YoY</div>
+        </div>
+        <div class="data-card">
+          <div class="num">80%</div>
+          <div class="label">Minimum mutation score generally considered test-suite adequate</div>
+        </div>
+        <div class="data-card">
+          <div class="num">$340B</div>
+          <div class="label">Estimated annual global spend on unit test authoring</div>
+        </div>
+      </div>
+
+      <h3>2.3 The Coverage Problem</h3>
+      <p>Multiple independent studies — and Meta's own engineering work — have found that high code coverage does not necessarily translate to strong defect detection. An agent optimising for coverage may achieve its numerical target while producing tests that assert nothing meaningful, a failure mode sometimes called <em>assertion-free testing</em> or <em>trivial test generation</em>.</p>
+      <p>When Meta's researchers examined this systematically, they found that coverage-driven test generation frequently left live mutants intact — mutants that a human reviewer would expect any reasonable test to kill. This empirical finding is the founding motivation for mutation-steered agentic test generation.</p>
+    </section>
+
+    <!-- MUTATION AS SIGNAL -->
+    <div class="mobile-section-divider"></div>
+    <section id="test-landscape">
+      <h2>3. The Testing Landscape: Where Mutation Fits</h2>
+      <p>Before zooming into mutation testing, it helps to see it in context. Software quality teams and AI coding agents have access to a range of test types, each targeting a different kind of gap. The table below maps the most relevant ones against the dimensions that matter most for agentic code generation: how precisely they signal quality, what kind of bugs they catch, and how expensive they are to run in a tight feedback loop.</p>
+      <p><strong>Click any card</strong> to see a deeper breakdown.</p>
+
+      <div class="test-compare-grid" id="tcGrid">
+        <div class="tc-card" onclick="showTcDetail('unit')">
+          <div class="tc-header"><span class="tc-icon">🧪</span><span class="tc-name">Unit Tests</span></div>
+          <div class="tc-bar"><div class="tc-bar-fill" style="width:60%;background:#4a8a5a"></div></div>
+          <div class="tc-meta">Fault precision: medium · Cost: low</div>
+        </div>
+        <div class="tc-card" onclick="showTcDetail('coverage')">
+          <div class="tc-header"><span class="tc-icon">📊</span><span class="tc-name">Code Coverage</span></div>
+          <div class="tc-bar"><div class="tc-bar-fill" style="width:30%;background:#c9a84c"></div></div>
+          <div class="tc-meta">Fault precision: low · Cost: very low</div>
+        </div>
+        <div class="tc-card" onclick="showTcDetail('property')">
+          <div class="tc-header"><span class="tc-icon">🎲</span><span class="tc-name">Property-Based</span></div>
+          <div class="tc-bar"><div class="tc-bar-fill" style="width:75%;background:#4a6a8a"></div></div>
+          <div class="tc-meta">Fault precision: high · Cost: medium</div>
+        </div>
+        <div class="tc-card" onclick="showTcDetail('contract')">
+          <div class="tc-header"><span class="tc-icon">📋</span><span class="tc-name">Contract / Type</span></div>
+          <div class="tc-bar"><div class="tc-bar-fill" style="width:45%;background:#7a4a8a"></div></div>
+          <div class="tc-meta">Fault precision: medium · Cost: very low</div>
+        </div>
+        <div class="tc-card" onclick="showTcDetail('snapshot')">
+          <div class="tc-header"><span class="tc-icon">📸</span><span class="tc-name">Snapshot Tests</span></div>
+          <div class="tc-bar"><div class="tc-bar-fill" style="width:25%;background:#8a6a4a"></div></div>
+          <div class="tc-meta">Fault precision: low · Cost: low</div>
+        </div>
+        <div class="tc-card selected" onclick="showTcDetail('mutation')" id="tc-mutation-card">
+          <div class="tc-header"><span class="tc-icon">🧬</span><span class="tc-name">Mutation Tests</span></div>
+          <div class="tc-bar"><div class="tc-bar-fill" style="width:92%;background:var(--gold)"></div></div>
+          <div class="tc-meta">Fault precision: <strong>highest</strong> · Cost: high</div>
+        </div>
+      </div>
+
+      <div class="tc-detail-panel" id="tcDetailPanel"></div>
+
+      <p style="margin-top:1.4rem">The key insight is not that mutation testing replaces the others — it doesn't. Unit tests remain the workhorse. Property-based testing excels at boundary and algorithmic bugs. Contracts and types eliminate whole categories of errors before runtime. The distinctive value of mutation testing is that it <em>audits all the others</em>: it asks whether your existing tests — however they were written — would actually catch a realistic fault. For AI-generated test suites in particular, where the agent may produce many syntactically plausible but assertion-weak tests, this audit function is uniquely valuable.</p>
+    </section>
+
+    <!-- MUTATION AS SIGNAL -->
+    <div class="mobile-section-divider"></div>
+    <section id="mutation-signal">
+      <h2>3. Mutation Tests as a Steering Signal</h2>
+      <h3>3.1 Why Mutation Scores Are Better Steering Signals</h3>
+      <p>From a reinforcement-learning perspective, a reward signal must be specific, reliable, and grounded in the actual objective. Code coverage is a <em>proxy</em> metric — it measures whether code was executed, not whether faults were detected. Mutation score is a <em>causal</em> metric: it directly tests whether the test suite would catch a realistic fault. For agentic systems that need to evaluate their own output quality autonomously, this distinction is critical.</p>
+      <p>The <em>Agentic Coding Handbook</em> (Tweag) articulates this elegantly: in AI-assisted workflows, a test becomes a natural language specification. The mutation score becomes a machine-readable assessment of how thoroughly that specification has been operationalised. An agent presented with a list of surviving mutants has actionable, specific guidance: <em>here are the exact faults your tests do not catch</em>.</p>
+
+      <h3>3.2 The Feedback Loop Architecture</h3>
+      <p>The canonical mutation-steered agentic loop proceeds as follows:</p>
+      <ol class="step-list">
+        <li><strong>Agent writes code</strong> targeting a specification or acceptance criteria.</li>
+        <li><strong>Agent generates tests</strong> (or tests are pre-written by a human as anchors).</li>
+        <li><strong>Mutation engine runs</strong> — e.g., Stryker, PIT, mutmut — producing a list of surviving mutants.</li>
+        <li><strong>Surviving mutants are fed back</strong> to the agent as structured context in the next prompt.</li>
+        <li><strong>Agent generates additional tests</strong> targeting the specific gaps identified by surviving mutants.</li>
+        <li><strong>Loop repeats</strong> until a mutation score threshold is met or maximum iterations are reached.</li>
+      </ol>
+      <p>This architecture is grounded in the Galaksiya TDD-agent model (write tests → agent generates code → reviewer agent checks → loop), extended with mutation-driven quality gates as an additional layer of scrutiny beyond pass/fail.</p>
+
+      <h3>3.3 Theoretical Alignment: Submodularity and Diminishing Returns</h3>
+      <p>The MIST-RL research group (arxiv, March 2026) provides a formal treatment of why mutation-driven reward is particularly well-suited to reinforcement-learning-based test generation. The mutation score function is monotonically non-decreasing and submodular — meaning that each additional test case yields diminishing marginal returns on fault detection. This makes it a theoretically sound reward signal: an agent that receives positive reward only for killing <em>new</em> mutants not killed by previous tests is naturally incentivised to diversify its test cases and explore rare failure modes, rather than generating redundant assertions that cover already-tested paths.</p>
+
+      <div class="callout">
+        <p>"The agent receives positive rewards only for killing new mutants. Redundant tests trigger a dynamic penalty... This dynamic feedback loop forces the policy to explore diverse failure modes rather than repeating simple assertions."</p>
+        <cite>— MIST-RL: Mutation-based Incremental Suite Testing via Reinforcement Learning, arXiv 2026</cite>
+      </div>
+
+      <h3>3.4 Comparison with Alternative Quality Signals</h3>
+      <p>Other quality signals used in agentic coding loops include static analysis warnings, type-checker output, linter scores, and property-based test failures. Each has its role, but none directly measures test suite effectiveness. Mutation score occupies a unique niche: it is the only widely available metric that asks "would your tests catch a bug?" rather than "does your code conform to style rules?" or "does your code execute without crashing?"</p>
+    </section>
+
+    <!-- EVIDENCE & TOOLS -->
+    <div class="mobile-section-divider"></div>
+    <section id="evidence">
+      <h2>4. Evidence &amp; Emerging Tools</h2>
+      <h3>4.1 MutGen</h3>
+      <p>MutGen (arxiv, June 2025) is the most rigorously evaluated mutation-guided LLM test generation approach to date. Evaluated on 204 subjects across two benchmarks, MutGen incorporates surviving mutant information directly into prompt construction, guiding the LLM toward tests that specifically target detected blind spots. MutGen significantly outperforms both EvoSuite (the leading classical test generation tool) and vanilla LLM prompting in terms of mutation score.</p>
+      <p>MutGen further introduces an iterative generation mechanism — the agent attempts to kill remaining live mutants in successive rounds, progressively tightening the test suite. Critically, the study also characterises the limits of LLMs in this setting: some mutants remain equivalent (semantically identical to the original despite syntactic differences), and some represent failure modes that LLMs consistently struggle to detect — findings directly useful for agent designers.</p>
+
+      <h3>4.2 Mutahunter</h3>
+      <p>Mutahunter is an open-source tool that operates in two modes: line coverage mode (generating tests for untested code) and mutation coverage mode (generating tests that specifically target surviving mutants). It is built on the same foundational research as Meta's TestGen-LLM and CodiumAI's Cover-Agent. Its value in agentic contexts lies in making mutation feedback actionable — the tool highlights exactly which mutations survived and provides that as structured input to the LLM, rather than requiring the agent to parse raw mutation reports itself.</p>
+      <p>However, as noted in independent evaluation, Mutahunter's mutation coverage mode introduces performance bottlenecks in large codebases: running the full mutation suite against every generated test iteration is computationally expensive, making it less suitable for rapid agentic iteration without additional optimisation such as file-scoped mutation runs.</p>
+
+      <h3>4.3 MIST-RL</h3>
+      <p>MIST-RL reframes test generation as a sequential decision problem, using reinforcement learning with Group Relative Policy Optimisation (GRPO). By reformulating the objective from "generate tests" to "incrementally kill new mutants", the system shifts from a quantity-oriented to a utility-oriented paradigm. The paper demonstrates that this approach produces compact but aggressive test suites — achieving higher mutation scores with fewer total tests than naive LLM scaling.</p>
+      <p>The key innovation is the incremental reward design: the agent accumulates reward only for mutants killed by new tests that were not already killed by the existing suite. Combined with a dynamic penalty for redundant tests, this drives exploration of diverse failure modes — a desirable property absent from coverage-optimised approaches.</p>
+
+      <h3>4.4 Stryker + Coding Agents (Practical)</h3>
+      <p>TestDouble (December 2025) published a detailed practical account of using Stryker — the leading JavaScript/TypeScript mutation framework — as a steering signal for Claude. The author demonstrated that simply prompting the agent to run a targeted Stryker command on a specific source file, interpret the surviving mutant list, and write tests to address the gaps produced a measurable improvement in mutation score from baseline to 94–96% on the targeted file.</p>
+      <p>Critically, the author noted a significant reliability caveat: the agent reported a final score of 96.30% while an independent check showed 94.44%. This hallucination of quality metrics is a non-trivial concern for autonomous pipelines where no human is in the loop to double-check the agent's self-report. The recommendation: always verify mutation scores directly from tool output, not from the agent's summary.</p>
+
+      <div class="tool-grid">
+        <div class="tool-card">
+          <div class="name">MutGen</div>
+          <div class="desc">Prompt-injection approach. Incorporates live mutant descriptions into LLM context to drive targeted test generation. Best-in-class mutation score on dual benchmarks (204 subjects). Iterative surviving-mutant elimination loop.</div>
+          <span class="tag">Research</span><span class="tag">Python / Java</span>
+        </div>
+        <div class="tool-card">
+          <div class="name">Mutahunter</div>
+          <div class="desc">Open-source dual-mode tool (coverage + mutation). Built on Meta's TestGen-LLM. Actionable structured mutation feedback. Performance bottlenecks on large codebases without file scoping.</div>
+          <span class="tag">Open Source</span><span class="tag">CI/CD Ready</span>
+        </div>
+        <div class="tool-card">
+          <div class="name">MIST-RL</div>
+          <div class="desc">RL-based sequential test generation using GRPO. Incremental reward for killing new mutants only. Produces compact, aggressive suites. Formally grounded in submodularity theory.</div>
+          <span class="tag">Research</span><span class="tag">RL / Fine-tuning</span>
+        </div>
+        <div class="tool-card">
+          <div class="name">Stryker + Agent</div>
+          <div class="desc">Practical integration of Stryker mutation framework with LLM coding agents. File-scoped mutation runs for performance. Demonstrated with Claude on real TypeScript projects. Agent score hallucination caveat.</div>
+          <span class="tag">Production</span><span class="tag">JS / TS</span>
+        </div>
+      </div>
+
+      <h3>4.5 The Mutating Company</h3>
+      <p>The Mutating Company represents a commercial play on exactly this thesis: an AI agent guided by mutation testing running massively in parallel on an autoscaling compute cluster. Their framing identifies the core competitive moat — mutation-driven feedback wins on quality over pure LLM test generation — and positions the market gap as the absence of an AI-guided, parallel mutation system at enterprise scale. Their estimate of the addressable spend on unit test authoring underlines the commercial stakes of this technically niche problem.</p>
+    </section>
+
+    <!-- INTERACTIVE LAB -->
+    <div class="mobile-section-divider"></div>
+    <section id="interactive">
+      <h2>6. ✦ Interactive Lab: Mutation Testing in Practice</h2>
+      <p>The five exercises below walk from the core insight — why coverage alone deceives — through to the practical gotchas of agentic pipelines. No prior knowledge needed. Each takes under two minutes.</p>
+
+      <!-- ════════ DEMO 1: Coverage vs Mutation ════════ -->
+      <div class="interactive-section">
+        <div class="ix-label">Exercise 1 of 5</div>
+        <div class="ix-title">The Coverage Illusion</div>
+        <div class="ix-desc">A test suite with 100% line coverage can still miss critical bugs. See exactly how — and watch mutation testing expose the gap.</div>
+
+        <div class="cvm-container" id="cvmContainer">
+          <div class="cvm-panel">
+            <div class="cvm-panel-title">The Code Under Test</div>
+            <div class="cvm-code" id="cvmCode">function discount(price, member) {
+  <span class="hl-covered">if (member) {</span>
+  <span class="hl-covered">  return price * 0.8;</span>
+  <span class="hl-covered">}</span>
+  <span class="hl-covered">return price;</span>
+}</div>
+            <div class="cvm-metric">
+              <span class="cvm-metric-label">Line coverage</span>
+              <div class="cvm-meter"><div class="cvm-fill green" id="cvmCovFill" style="width:100%"></div></div>
+              <span class="cvm-pct" id="cvmCovPct">100%</span>
+            </div>
+            <div class="cvm-metric">
+              <span class="cvm-metric-label">Mutation score</span>
+              <div class="cvm-meter"><div class="cvm-fill gold" id="cvmMutFill" style="width:33%"></div></div>
+              <span class="cvm-pct" id="cvmMutPct">33%</span>
+            </div>
+            <div class="cvm-verdict bad" id="cvmVerdict1">⚠ 100% coverage but only 1 of 3 mutants killed. Two bugs hiding in plain sight.</div>
+          </div>
+          <div class="cvm-panel">
+            <div class="cvm-panel-title" id="cvmRightTitle">The Weak Test Suite</div>
+            <div class="cvm-code" id="cvmTests">// Test suite A — achieves 100% coverage
+test('runs member path', () => {
+  const r = discount(100, true);
+  expect(r).toBeDefined(); // ← no value check!
+});
+test('runs non-member path', () => {
+  const r = discount(100, false);
+  expect(r).toBeDefined(); // ← no value check!
+});</div>
+            <div class="cvm-verdict bad" id="cvmVerdict2" style="display:none"></div>
+            <div class="cvm-verdict fixed" id="cvmVerdict3" style="display:none"></div>
+          </div>
+        </div>
+        <div class="ix-btn-row">
+          <button class="ix-btn" id="cvmBtn1" onclick="cvmStep(1)">▶ Show surviving mutants</button>
+          <button class="ix-btn secondary" id="cvmBtn2" onclick="cvmStep(2)" style="display:none">Fix the tests →</button>
+          <button class="ix-btn secondary" id="cvmReset" onclick="cvmReset()" style="display:none">↺ Reset</button>
+        </div>
+      </div>
+
+      <!-- ════════ DEMO 2: Spot the Mutant ════════ -->
+      <div class="interactive-section">
+        <div class="ix-label">Exercise 2 of 5</div>
+        <div class="ix-title">Spot the Mutant</div>
+        <div class="ix-desc">An AI agent just generated the code on the right. Something small has been mutated. Can you find it before your tests do?</div>
+        <div id="quizBody"></div>
+        <div id="quizNav" class="ix-btn-row"></div>
+      </div>
+
+      <!-- ════════ DEMO 3: Agentic Loop ════════ -->
+      <div class="interactive-section">
+        <div class="ix-label">Exercise 3 of 5</div>
+        <div class="ix-title">The Agentic Feedback Loop</div>
+        <div class="ix-desc">Step through a mutation-steered AI coding cycle. Watch the agent write code, get scored, receive surviving mutants as context, and improve its tests — autonomously.</div>
+
+        <div class="loop-track" id="loopTrack">
+          <div class="loop-step active" id="ls0">
+            <div class="loop-dot">✍</div>
+            <div class="loop-step-label">Agent writes<br>code</div>
+          </div>
+          <div class="loop-step" id="ls1">
+            <div class="loop-dot">🧪</div>
+            <div class="loop-step-label">Agent writes<br>tests</div>
+          </div>
+          <div class="loop-step" id="ls2">
+            <div class="loop-dot">🧬</div>
+            <div class="loop-step-label">Mutation<br>engine runs</div>
+          </div>
+          <div class="loop-step" id="ls3">
+            <div class="loop-dot">📋</div>
+            <div class="loop-step-label">Survivors fed<br>to agent</div>
+          </div>
+          <div class="loop-step" id="ls4">
+            <div class="loop-dot">🔁</div>
+            <div class="loop-step-label">Agent adds<br>new tests</div>
+          </div>
+          <div class="loop-step" id="ls5">
+            <div class="loop-dot">✅</div>
+            <div class="loop-step-label">Score gate<br>met?</div>
+          </div>
+        </div>
+        <div class="loop-detail" id="loopDetail"><span class="ld-comment">// Ready — press Next Step to begin the loop</span></div>
+        <div class="loop-iteration" id="loopIter"></div>
+        <div class="ix-btn-row">
+          <button class="ix-btn" id="loopBtn" onclick="loopNext()">▶ Next Step</button>
+          <button class="ix-btn secondary" id="loopReset" onclick="loopReset()" style="display:none">↺ Restart</button>
+        </div>
+      </div>
+
+      <!-- ════════ DEMO 4: Score Hallucination ════════ -->
+      <div class="interactive-section">
+        <div class="ix-label">Exercise 4 of 5</div>
+        <div class="ix-title">The Hallucination Problem</div>
+        <div class="ix-desc">AI agents can misreport their own mutation scores — confidently. This demo re-creates the TestDouble case study where a real agent reported 96.30% while the tool measured 94.44%. See why this matters in fully autonomous pipelines.</div>
+        <div class="hall-terminal" id="hallTerm"><span class="t-muted">// Press Run Pipeline to see the agent work</span></div>
+        <div id="hallCompare" style="display:none">
+          <div class="hall-compare">
+            <div class="hall-box agent-says">
+              <div class="hall-box-label">🤖 Agent self-reports</div>
+              <div class="hall-score">96.30%</div>
+              <div class="hall-sub">Agent: "Tests are comprehensive. Mutation score satisfactory. Ready to ship."</div>
+            </div>
+            <div class="hall-box tool-says">
+              <div class="hall-box-label">🔧 Stryker actual output</div>
+              <div class="hall-score">94.44%</div>
+              <div class="hall-sub">3 additional surviving mutants not accounted for in agent summary.</div>
+            </div>
+          </div>
+          <div class="cvm-verdict bad" style="display:block;margin-top:0.8rem">⚠ The gap is small here — but in a fully autonomous pipeline with no human review, the agent would proceed with false confidence. Always consume mutation scores directly from tool output, never from the agent's summary.</div>
+        </div>
+        <div class="ix-btn-row">
+          <button class="ix-btn" id="hallBtn" onclick="hallRun()">▶ Run Pipeline</button>
+          <button class="ix-btn secondary" id="hallReset" onclick="hallReset()" style="display:none">↺ Reset</button>
+        </div>
+      </div>
+
+      <!-- ════════ DEMO 5: Equivalent Mutant Classifier ════════ -->
+      <div class="interactive-section">
+        <div class="ix-label">Exercise 5 of 5</div>
+        <div class="ix-title">Killable or Equivalent?</div>
+        <div class="ix-desc">Not every surviving mutant is a test gap. Some mutants are <em>equivalent</em> — they look different but behave identically. An agent chasing these wastes compute. For each pair below, decide: could a correct test kill this mutant, or is it equivalent?</div>
+        <div id="eqCards"></div>
+        <div class="eq-tally" id="eqTally"></div>
+      </div>
+
+    </section>
+
+    <!-- LIMITATIONS -->
+    <div class="mobile-section-divider"></div>
+    <section id="limitations">
+      <h2>5. Limitations &amp; Pitfalls</h2>
+      <div class="pro-con">
+        <div class="pro-box">
+          <h4>Strengths</h4>
+          <ul>
+            <li>Direct measure of fault detection, not a proxy</li>
+            <li>Provides specific, actionable surviving mutants</li>
+            <li>Theoretically well-grounded (submodular reward)</li>
+            <li>Applicable to any language with a mutation tool</li>
+            <li>Demonstrated improvements in empirical evaluations</li>
+            <li>Reduces redundant and trivial test generation</li>
+            <li>Natural alignment with TDD agentic workflows</li>
+          </ul>
+        </div>
+        <div class="con-box">
+          <h4>Weaknesses</h4>
+          <ul>
+            <li>Computationally expensive at scale</li>
+            <li>Equivalent mutants cause false failure targets</li>
+            <li>Agents can hallucinate reported mutation scores</li>
+            <li>Hard-to-kill mutants may not be worth pursuing</li>
+            <li>Does not cover architectural or integration faults</li>
+            <li>Requires a mature test harness as a prerequisite</li>
+            <li>Gameable if mutation score is the sole objective</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>5.1 Computational Cost</h3>
+      <p>Running a full mutation suite is expensive — O(M × K) for M mutants and K tests. For a medium-sized codebase with thousands of tests and hundreds of mutants, a full run may take tens of minutes. When embedded in a tight agentic loop that iterates dozens of times, this cost becomes prohibitive. Practical mitigations include: targeted mutation on recently modified files only, coverage-guided pre-filtering to reduce the mutant pool, and parallelisation on distributed compute clusters. Stryker's integration with test frameworks that allow per-file test targeting is particularly relevant here.</p>
+
+      <h3>5.2 Equivalent Mutants</h3>
+      <p>A well-known limitation of mutation testing is the existence of <em>equivalent mutants</em> — variants that are syntactically different but semantically identical to the original, and therefore cannot be killed by any correct test. An agent instructed to kill all surviving mutants will inevitably waste effort on equivalents. MutGen's study directly characterises this failure mode and argues that understanding which mutation operators tend to produce equivalents is essential for effective agent prompting. Practical guidance: always use mutation operators with low equivalent rates (relational and arithmetic), and discard absolute-value and unary-minus operators which have notoriously high equivalence rates.</p>
+
+      <h3>5.3 Agent Hallucination of Scores</h3>
+      <p>The TestDouble case study revealed a practically important failure mode: the agent reported a higher mutation score than the actual measured result. In a fully autonomous pipeline, this hallucination would go undetected, resulting in false confidence in test quality. Any production deployment of mutation-steered agents must therefore treat the agent's self-reported score as untrustworthy and independently verify mutation results from the tool's output directly. This is most cleanly achieved by having the mutation tool write its score to a structured file (JSON, XML) that is consumed by an orchestrating system — not summarised by the agent.</p>
+
+      <h3>5.4 The "Genie Problem" and Over-Engineering</h3>
+      <p>Agentic coding tools exhibit what Giorgio Zoppi aptly calls the "Genie Phenomenon" — agents grant your wishes, but not always in the way intended. An agent tasked with achieving a high mutation score may write tests that are tightly coupled to implementation details, fragile, and maintenance-heavy. Worse, it may add unnecessary complexity to the source code itself to make it more testable, introducing technical debt in the pursuit of a metric. Mutation score, like all metrics, is gameable. Guard against this with human review checkpoints and by constraining the agent to test-only modifications.</p>
+
+      <h3>5.5 Coverage as a Prerequisite</h3>
+      <p>Practical guidance from the TestDouble analysis makes an important point: coverage thresholds should be enforced <em>before</em> mutation testing runs. Running mutation analysis on untested code generates noise and wastes compute — a mutant in uncovered code is guaranteed to survive, but this is not informative. Mutation testing is most valuable as a <em>second-order</em> quality gate, applied after basic coverage is established, not as a replacement for coverage metrics.</p>
+    </section>
+
+    <!-- FUTURE -->
+    <div class="mobile-section-divider"></div>
+    <section id="future">
+      <h2>6. Future Directions</h2>
+      <h3>6.1 Just-in-Time Mutation Feedback</h3>
+      <p>Meta's February 2026 paper on Just-in-Time Tests (JiTTests) points toward an interesting synthesis: rather than maintaining a static mutation suite, bespoke tests could be generated on-the-fly for each code change, targeting the specific mutations that the change introduces. This would reduce the computational burden of full-suite mutation runs while preserving the quality signal for the delta that matters most — the code the agent just wrote. JiT mutation feedback could make the technique viable even on large codebases where full mutation runs are impractical.</p>
+
+      <h3>6.2 Reinforcement Learning at Scale</h3>
+      <p>MIST-RL demonstrates that RL with mutation-based incremental rewards can train LLMs to generate better test suites. As these models mature and the reward function is refined to better handle equivalents and hard-to-kill mutants, RL-trained test generation models may become the standard backbone for agentic QA agents — replacing prompt-engineering-based approaches with learned policies that internalise what "good test diversity" means, without needing explicit instruction.</p>
+
+      <h3>6.3 Higher-Order Mutation and Interaction Testing</h3>
+      <p>Current mutation testing focuses on first-order mutations — single, small changes. Research on higher-order mutations (multiple simultaneous changes) suggests these can uncover interaction faults that first-order analysis misses. As agentic systems tackle increasingly complex software, integration with higher-order mutation may become necessary to catch faults that emerge from component interactions rather than isolated logic errors. The challenge is combinatorial explosion: the number of higher-order mutants grows exponentially.</p>
+
+      <h3>6.4 Spec-Driven Mutation</h3>
+      <p>GitHub's 2025 Spec Kit and similar spec-driven development tools offer an integration opportunity: mutation operators could be derived from the specification itself, targeting the specific behaviours described in the spec rather than generic operator replacement. An agent working from a spec could use spec-derived mutants as a direct test of whether its implementation matches the intended behaviour — a more semantically grounded form of mutation feedback that bridges the gap between requirements and tests.</p>
+
+      <h3>6.5 Human-in-the-Loop Checkpoints</h3>
+      <p>Given the hallucination risks and equivalent mutant problems, the most robust near-term architecture is likely a hybrid: autonomous mutation-driven iteration with human review checkpoints at key milestones. The Thoughtworks analysis of AI coding autonomy concluded that human oversight remains essential even for simple applications — a conclusion that applies with more force when the quality signal itself can be misreported by the agent. Designing clear handoff points where a human validates the mutation score before the agent continues reduces risk without sacrificing the efficiency gains of agentic coding.</p>
+    </section>
+
+    <!-- CONCLUSION -->
+    <div class="mobile-section-divider"></div>
+    <section id="conclusion">
+      <h2>7. Conclusion</h2>
+      <p>Mutation testing represents a genuinely superior quality signal for agentic coding agents compared to the dominant metric of code coverage. It is causally linked to fault detection, actionable at the level of specific surviving mutants, and theoretically well-grounded as a submodular reward function. Emerging tools — MutGen, Mutahunter, MIST-RL, and practical Stryker integrations — demonstrate that mutation-steered agents can achieve meaningfully higher fault detection capability than agents optimising for coverage alone.</p>
+      <p>However, the technique is not a silver bullet. Computational costs, equivalent mutants, and — critically — the risk of agents hallucinating their own quality metrics impose real constraints on fully autonomous deployment. The most pragmatic current architecture treats mutation score as a second-order quality gate: applied after coverage thresholds are met, on targeted recently-modified files, with independent verification of scores from the tool's own output rather than the agent's self-report.</p>
+      <p>The broader shift the agentic era demands is a move from <em>quantity-oriented</em> to <em>utility-oriented</em> test generation. Mutation testing is the most mature operationalisation of that principle available today. As RL-trained test generation models mature and JiT mutation feedback reduces computational overhead, mutation-steered agentic loops are likely to become standard infrastructure for software teams that take quality seriously in an era of accelerating AI-driven development.</p>
+
+      <div class="callout">
+        <p>"AI coding assistants have accelerated development 5–10×, but production incidents from generated code increased 43% year-over-year. This 'Quality Tax' is making AI testing investment existential."</p>
+        <cite>— AI Software Testing Startups: The Definitive 2026 Guide</cite>
+      </div>
+
+      <h3>References (Selected)</h3>
+      <p class="ref">MIST-RL Team (2026). <em>MIST-RL: Mutation-based Incremental Suite Testing via Reinforcement Learning.</em> arXiv:2603.01409.</p>
+      <p class="ref">MutGen Authors (2025). <em>On Mutation-Guided Unit Test Generation.</em> arXiv:2506.02954.</p>
+      <p class="ref">Meta Engineering (2026). <em>The Death of Traditional Testing: Agentic Development Broke a 50-Year-Old Field, JiTTesting Can Revive It.</em> engineering.fb.com.</p>
+      <p class="ref">Willison, S. (2026). <em>Red/green TDD — Agentic Engineering Patterns.</em> simonwillison.net.</p>
+      <p class="ref">TestDouble (2025). <em>Keep Your Coding Agent on Task with Mutation Testing.</em> testdouble.com.</p>
+      <p class="ref">System Verification (2025). <em>LLMs in Software Testing: Program-Agnostic Unit Test Generation.</em> blog.systemverification.com.</p>
+      <p class="ref">Tweag (2025). <em>Test-Driven Development — Agentic Coding Handbook.</em> tweag.github.io.</p>
+      <p class="ref">Zoppi, G. (2025). <em>Test-Driven Development with Agentic AI.</em> Medium.</p>
+      <p class="ref">DeMillo, R., Lipton, R., &amp; Sayward, F. (1978). <em>Hints on Test Data Selection: Help for the Practicing Programmer.</em> IEEE Computer, 11(4), 34–41.</p>
+      <p class="ref">Galaksiya (2025). <em>TDD-Driven AI Coding Agent Architecture.</em> Medium / Galaksiya Blog.</p>
+    </section>
+
+  </main>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════
+function show(id, el) {
+  if (window.innerWidth > 860) {
+    document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    el.classList.add('active');
+    event.preventDefault();
+  }
+}
+function scrollToSection(id) {
+  var el = document.getElementById(id);
+  if (el) {
+    var offset = 64;
+    var top = el.getBoundingClientRect().top + window.pageYOffset - offset;
+    window.scrollTo({ top: top, behavior: 'smooth' });
+  }
+}
+function openDrawer() {
+  document.getElementById('mobileDrawer').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeDrawer() {
+  document.getElementById('mobileDrawer').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeDrawer(); });
+window.addEventListener('resize', function() {
+  var sections = document.querySelectorAll('section');
+  if (window.innerWidth <= 860) {
+    sections.forEach(s => s.style.display = 'block');
+  } else {
+    sections.forEach(s => s.style.display = '');
+    var hasActive = document.querySelector('section.active');
+    if (!hasActive) {
+      var first = document.querySelector('section');
+      if (first) first.classList.add('active');
+      var firstNav = document.querySelector('.nav-item');
+      if (firstNav) firstNav.classList.add('active');
+    }
+  }
+});
+
+// ══════════════════════════════════════════
+// TEST LANDSCAPE COMPARISON
+// ══════════════════════════════════════════
+var tcData = {
+  unit: {
+    name: '🧪 Unit Tests',
+    what: 'Test individual functions in isolation with specific inputs and expected outputs.',
+    catches: 'Logic errors in individual functions. Regression bugs when code changes.',
+    misses: 'Whether tests are actually asserting the right things. Weak assertions pass silently.',
+    cost: 'Very low. Runs in milliseconds. First thing in every CI pipeline.',
+    aiRole: 'AI agents generate many unit tests easily — but quantity ≠ quality. Many AI-written unit tests have weak or missing assertions.',
+    pills: [['green','Fast CI'], ['green','Easy to write'], ['amber','Weak assertions invisible'], ['red','Misses integration bugs']]
+  },
+  coverage: {
+    name: '📊 Code Coverage',
+    what: 'Measures what percentage of lines, branches, or paths are executed during tests.',
+    catches: 'Completely untested code paths. Dead code. Missing test cases for branches.',
+    misses: 'Whether tests actually check anything. A test that calls code but asserts nothing scores 100%.',
+    cost: 'Essentially free — a side effect of running tests. Built into every modern test runner.',
+    aiRole: 'The most common AI agent quality target — and the most gameable. Agents can hit 100% coverage with assertion-free tests that catch nothing.',
+    pills: [['green','Zero cost'], ['green','Universal tooling'], ['red','Easily gamed'], ['red','No fault detection guarantee']]
+  },
+  property: {
+    name: '🎲 Property-Based',
+    what: 'Define invariants that must hold for all inputs; the framework generates hundreds of random test cases automatically.',
+    catches: 'Edge cases and boundary bugs that example-based tests miss. Off-by-one errors. Overflow. Unexpected input combinations.',
+    misses: 'Bugs that only appear at specific, non-random inputs. Complex state machine bugs.',
+    cost: 'Medium. Slower than unit tests. Requires careful invariant design. AI agents struggle to write good properties.',
+    aiRole: 'Underused by AI agents today. When agents do write property tests, they tend to write trivial properties (e.g. output is not null) rather than meaningful invariants.',
+    pills: [['green','Finds edge cases'], ['green','High bug yield'], ['amber','Harder to write'], ['amber','Slower feedback']]
+  },
+  contract: {
+    name: '📋 Contract / Type',
+    what: 'Static types, runtime contracts, or design-by-contract annotations that constrain what functions accept and return.',
+    catches: 'Type mismatches. Null/undefined errors. Interface violations. Whole categories of runtime errors eliminated statically.',
+    misses: 'Business logic bugs within valid types. Algorithmic errors. Off-by-one errors that stay within type bounds.',
+    cost: 'Very low once the type system is in place. Static analysis runs instantly. AI agents generally respect and propagate types well.',
+    aiRole: 'AI agents with TypeScript or typed Python produce noticeably fewer type-related bugs. Contracts narrow the AI\'s solution space, reducing verbose or wrong code.',
+    pills: [['green','Instant feedback'], ['green','AI-friendly'], ['amber','Only type-level bugs'], ['red','No logic error detection']]
+  },
+  snapshot: {
+    name: '📸 Snapshot Tests',
+    what: 'Capture the output of a function or component, save it, and flag any change as a test failure.',
+    catches: 'Unintended regressions in output shape or content. UI changes. Serialisation changes.',
+    misses: 'Whether the original snapshot was correct. Bugs that existed before the snapshot was taken. Intentional changes require snapshot updates.',
+    cost: 'Low to run, but high in maintenance. AI agents over-generate snapshot tests — they are easy to produce and satisfy coverage tools trivially.',
+    aiRole: 'A common AI agent over-reliance pattern. Snapshots are easy to generate, tick coverage boxes, but provide almost no fault-detection value for logic bugs.',
+    pills: [['green','Easy to generate'], ['amber','Regression detection only'], ['red','No logic coverage'], ['red','Brittle to change']]
+  },
+  mutation: {
+    name: '🧬 Mutation Testing',
+    what: 'Automatically injects small faults into code and checks whether tests detect them. Mutation score = fraction of injected faults caught.',
+    catches: 'Weak or missing assertions in any type of test. Tests that execute code but do not verify results. The blind spots of coverage-optimised test suites.',
+    misses: 'Equivalent mutants (syntactically different but semantically identical). Architectural bugs. Integration-level faults between components.',
+    cost: 'High. Runs the entire test suite once per mutant. Mitigated by file-scoping, parallelisation, and incremental mutation on changed code only.',
+    aiRole: 'The most informative feedback signal for AI agents. Surviving mutants give the agent specific, actionable gaps to address. Uniquely audits the quality of all other test types.',
+    pills: [['green','Highest fault precision'], ['green','Audits all test types'], ['amber','Computationally expensive'], ['amber','Equivalent mutants']]
+  }
+};
+
+function showTcDetail(key) {
+  document.querySelectorAll('.tc-card').forEach(c => c.classList.remove('selected'));
+  if (key === 'mutation') document.getElementById('tc-mutation-card').classList.add('selected');
+  else event.currentTarget && event.currentTarget.classList.add('selected');
+
+  var d = tcData[key];
+  var pillsHtml = d.pills.map(p => '<span class="tc-signal-pill pill-'+p[0]+'">'+p[1]+'</span>').join('');
+  var panel = document.getElementById('tcDetailPanel');
+  panel.innerHTML = '<h4>'+d.name+'</h4>' +
+    '<div class="tc-detail-row">' +
+      '<div class="tc-detail-col"><strong>What it does</strong>'+d.what+'</div>' +
+      '<div class="tc-detail-col"><strong>Catches</strong>'+d.catches+'</div>' +
+      '<div class="tc-detail-col"><strong>Misses</strong>'+d.misses+'</div>' +
+    '</div>' +
+    '<div class="tc-detail-row" style="margin-top:0.8rem">' +
+      '<div class="tc-detail-col"><strong>CI cost</strong>'+d.cost+'</div>' +
+      '<div class="tc-detail-col" style="grid-column:span 2"><strong>Role in AI code generation</strong>'+d.aiRole+'</div>' +
+    '</div>' +
+    '<div class="tc-signal-row">'+pillsHtml+'</div>';
+  panel.classList.add('visible');
+
+  // handle click bubbling for card selection
+  document.querySelectorAll('.tc-card').forEach(function(card, i) {
+    var keys = ['unit','coverage','property','contract','snapshot','mutation'];
+    card.onclick = function(){ showTcDetail(keys[i]); card.classList.add('selected'); };
+  });
+}
+// Show mutation detail on load
+window.addEventListener('DOMContentLoaded', function(){ showTcDetail('mutation'); });
+
+
+// ══════════════════════════════════════════
+// DEMO 1: COVERAGE VS MUTATION
+// ══════════════════════════════════════════
+var cvmState = 0;
+function cvmStep(n) {
+  if (n === 1) {
+    // show surviving mutants in code
+    document.getElementById('cvmCode').innerHTML =
+      'function discount(price, member) {\n' +
+      '  if (member) {\n' +
+      '    return price * <span class="hl-mutant">0.8</span><span class="hl-new">0.9</span>; // mutant 1: wrong rate\n' +
+      '  }\n' +
+      '  <span class="hl-mutant">return price;</span> // mutant 2: deleted return\n' +
+      '  // mutant 3: condition flipped (!member)\n' +
+      '}';
+    document.getElementById('cvmVerdict2').style.display = 'block';
+    document.getElementById('cvmVerdict2').innerHTML = '🧬 3 mutants generated. Only 1 killed (the deletion — it causes a crash). Mutants 1 and 3 survive: tests never check <em>values</em>, just that the function ran.';
+    document.getElementById('cvmVerdict2').className = 'cvm-verdict bad';
+    document.getElementById('cvmBtn1').style.display = 'none';
+    document.getElementById('cvmBtn2').style.display = 'inline-flex';
+  } else if (n === 2) {
+    document.getElementById('cvmRightTitle').textContent = 'Fixed Test Suite';
+    document.getElementById('cvmTests').innerHTML =
+      '// Test suite B — meaningful assertions\ntest(\'member gets 20% off\', () => {\n  expect(discount(100, true)).toBe(80); // ✓ checks value\n});\ntest(\'non-member pays full\', () => {\n  expect(discount(100, false)).toBe(100); // ✓ checks value\n});\ntest(\'member rate is correct\', () => {\n  expect(discount(200, true)).toBe(160); // ✓ second data point\n});';
+    document.getElementById('cvmMutFill').style.width = '100%';
+    document.getElementById('cvmMutFill').className = 'cvm-fill green';
+    document.getElementById('cvmMutPct').textContent = '100%';
+    document.getElementById('cvmVerdict1').style.display = 'none';
+    document.getElementById('cvmVerdict3').style.display = 'block';
+    document.getElementById('cvmVerdict3').textContent = '✓ All 3 mutants killed. Mutation score: 100%. The tests now actually verify behaviour, not just execution.';
+    document.getElementById('cvmVerdict2').style.display = 'none';
+    document.getElementById('cvmBtn2').style.display = 'none';
+    document.getElementById('cvmReset').style.display = 'inline-flex';
+  }
+}
+function cvmReset() {
+  document.getElementById('cvmCode').innerHTML =
+    'function discount(price, member) {\n' +
+    '  <span class="hl-covered">if (member) {</span>\n' +
+    '  <span class="hl-covered">  return price * 0.8;</span>\n' +
+    '  <span class="hl-covered">}</span>\n' +
+    '  <span class="hl-covered">return price;</span>\n' +
+    '}';
+  document.getElementById('cvmRightTitle').textContent = 'The Weak Test Suite';
+  document.getElementById('cvmTests').innerHTML =
+    '// Test suite A — achieves 100% coverage\ntest(\'runs member path\', () => {\n  const r = discount(100, true);\n  expect(r).toBeDefined(); // ← no value check!\n});\ntest(\'runs non-member path\', () => {\n  const r = discount(100, false);\n  expect(r).toBeDefined(); // ← no value check!\n});';
+  document.getElementById('cvmMutFill').style.width = '33%';
+  document.getElementById('cvmMutFill').className = 'cvm-fill gold';
+  document.getElementById('cvmMutPct').textContent = '33%';
+  document.getElementById('cvmVerdict1').style.display = 'block';
+  document.getElementById('cvmVerdict2').style.display = 'none';
+  document.getElementById('cvmVerdict3').style.display = 'none';
+  document.getElementById('cvmBtn1').style.display = 'inline-flex';
+  document.getElementById('cvmBtn2').style.display = 'none';
+  document.getElementById('cvmReset').style.display = 'none';
+}
+
+
+// ══════════════════════════════════════════
+// DEMO 2: SPOT THE MUTANT QUIZ
+// ══════════════════════════════════════════
+var quizData = [
+  {
+    original:
+'function clamp(val, min, max) {\n  if (val < min) return min;\n  if (val > max) return max;\n  return val;\n}',
+    mutant:
+'function clamp(val, min, max) {\n  if (val < min) return min;\n  if (val >= max) return max;\n  return val;\n}',
+    options: [
+      'The first condition changed from < to <=',
+      'The second condition changed from > to >=',
+      'The return value on line 2 changed',
+      'The function name changed'
+    ],
+    correct: 1,
+    explanation: '✓ Correct! <code>val > max</code> was mutated to <code>val >= max</code>. A test with <code>clamp(5, 1, 5)</code> would expose this — the original returns 5, the mutant also returns 5 (max), so you\'d need to test <code>clamp(5, 1, 5) === 5</code> specifically. Subtle!'
+  },
+  {
+    original:
+'function isEligible(age, income) {\n  return age >= 18 && income > 30000;\n}',
+    mutant:
+'function isEligible(age, income) {\n  return age >= 18 || income > 30000;\n}',
+    options: [
+      'age >= 18 changed to age > 18',
+      'income > 30000 changed to income >= 30000',
+      '&& changed to ||',
+      'The function returns false instead of true'
+    ],
+    correct: 2,
+    explanation: '✓ Correct! The logical connector <code>&amp;&amp;</code> was mutated to <code>||</code>. This is a logical connector replacement — one of the most dangerous operator mutations because it silently changes the semantics from "both required" to "either sufficient". A test with age=16, income=50000 would catch it.'
+  },
+  {
+    original:
+'function applyTax(price, rate) {\n  const tax = price * rate;\n  return price + tax;\n}',
+    mutant:
+'function applyTax(price, rate) {\n  const tax = price * rate;\n  return price - tax;\n}',
+    options: [
+      'price * rate changed to price / rate',
+      'The tax variable was deleted',
+      'return price + tax changed to return price - tax',
+      'rate was replaced with 0'
+    ],
+    correct: 2,
+    explanation: '✓ Correct! <code>price + tax</code> was mutated to <code>price - tax</code> — an arithmetic operator replacement. This turns a tax addition into a discount. A simple assertion like <code>expect(applyTax(100, 0.1)).toBe(110)</code> would kill this mutant immediately.'
+  }
+];
+var quizIdx = 0;
+var quizScore = 0;
+var quizAnswered = [];
+
+function renderQuiz() {
+  var q = quizData[quizIdx];
+  var html = '<div class="quiz-code-compare">' +
+    '<div class="quiz-code-box"><span class="quiz-label">Original code</span><pre>' + q.original + '</pre></div>' +
+    '<div class="quiz-code-box"><span class="quiz-label">Mutant (AI-generated variant)</span><pre>' + q.mutant + '</pre></div>' +
+    '</div>' +
+    '<div class="quiz-options">';
+  q.options.forEach(function(opt, i) {
+    html += '<button class="quiz-opt" id="qopt'+i+'" onclick="quizAnswer('+i+')">' + opt + '</button>';
+  });
+  html += '</div><div class="quiz-feedback" id="quizFeedback"></div>';
+  document.getElementById('quizBody').innerHTML = html;
+  document.getElementById('quizNav').innerHTML =
+    '<span style="font-size:0.82rem;color:var(--muted);align-self:center">Question '+(quizIdx+1)+' of '+quizData.length+'</span>';
+}
+
+function quizAnswer(i) {
+  if (quizAnswered[quizIdx]) return;
+  quizAnswered[quizIdx] = true;
+  var q = quizData[quizIdx];
+  var correct = i === q.correct;
+  if (correct) quizScore++;
+  document.querySelectorAll('.quiz-opt').forEach(function(btn, j) {
+    btn.disabled = true;
+    if (j === q.correct) btn.classList.add('correct');
+    else if (j === i && !correct) btn.classList.add('wrong');
+  });
+  var fb = document.getElementById('quizFeedback');
+  fb.innerHTML = (correct ? '<span style="color:#2a6a3a;font-weight:700">✓ Right!</span> ' : '<span style="color:#8a2a2a;font-weight:700">✗ Not quite.</span> ') + q.explanation;
+  fb.className = 'quiz-feedback show';
+  fb.style.background = correct ? 'rgba(74,138,90,0.08)' : 'rgba(201,76,76,0.06)';
+  fb.style.borderRadius = '6px';
+  fb.style.padding = '0.8rem 1rem';
+  fb.style.marginTop = '0.5rem';
+
+  var navHtml = '<span style="font-size:0.82rem;color:var(--muted);align-self:center">Question '+(quizIdx+1)+' of '+quizData.length+'</span>';
+  if (quizIdx < quizData.length - 1) {
+    navHtml += '<button class="ix-btn" onclick="quizNext()" style="margin-left:auto">Next question →</button>';
+  } else {
+    navHtml += '<button class="ix-btn" onclick="quizFinish()" style="margin-left:auto">See results →</button>';
+  }
+  document.getElementById('quizNav').innerHTML = navHtml;
+}
+
+function quizNext() {
+  quizIdx++;
+  renderQuiz();
+}
+
+function quizFinish() {
+  var msgs = ['Keep going — mutants are sneaky!', 'Good eye — you\'re getting it!', 'Sharp! You think like a mutation engine.'];
+  document.getElementById('quizBody').innerHTML =
+    '<div style="text-align:center;padding:1.5rem 0">' +
+    '<div style="font-family:Playfair Display,serif;font-size:2.5rem;color:var(--gold);font-weight:700">'+quizScore+'/'+quizData.length+'</div>' +
+    '<div style="font-size:1rem;color:#555;margin-top:0.5rem">'+msgs[quizScore-1]+'</div>' +
+    '</div>';
+  document.getElementById('quizNav').innerHTML =
+    '<button class="ix-btn secondary" onclick="quizReset()">↺ Try again</button>';
+}
+
+function quizReset() {
+  quizIdx = 0; quizScore = 0; quizAnswered = [];
+  renderQuiz();
+  document.getElementById('quizNav').innerHTML = '';
+}
+
+// ══════════════════════════════════════════
+// DEMO 3: AGENTIC LOOP SIMULATOR
+// ══════════════════════════════════════════
+var loopStep = 0;
+var loopIter = 1;
+var loopSteps = [
+  {
+    label: 'Step 1 — Agent writes implementation',
+    content: '<span class="ld-comment">// Agent task: implement validateEmail(str)</span>\n<span class="ld-key">function</span> <span class="ld-val">validateEmail</span>(str) {\n  <span class="ld-key">return</span> str.includes(<span class="ld-val">\'@\'</span>);\n}\n<span class="ld-comment">// Simple implementation. Possibly incomplete.</span>'
+  },
+  {
+    label: 'Step 2 — Agent generates initial tests',
+    content: '<span class="ld-comment">// Agent auto-generates tests for validateEmail</span>\n<span class="ld-key">test</span>(<span class="ld-val">\'valid email passes\'</span>, () => {\n  <span class="ld-key">expect</span>(validateEmail(<span class="ld-val">\'a@b.com\'</span>)).toBe(<span class="ld-ok">true</span>);\n});\n<span class="ld-key">test</span>(<span class="ld-val">\'no @ fails\'</span>, () => {\n  <span class="ld-key">expect</span>(validateEmail(<span class="ld-val">\'notanemail\'</span>)).toBe(<span class="ld-warn">false</span>);\n});\n<span class="ld-comment">// Coverage: 100%. But mutation score?</span>'
+  },
+  {
+    label: 'Step 3 — Mutation engine runs (Stryker)',
+    content: '<span class="ld-key">$</span> <span class="ld-val">stryker run --files validateEmail.js</span>\n\n<span class="ld-comment">Generating mutants...</span>\n  Mutant 1: <span class="ld-warn">str.includes(\'@\') → str.includes(\'\')</span>  [SURVIVED]\n  Mutant 2: <span class="ld-warn">str.includes(\'@\') → !str.includes(\'@\')</span> [SURVIVED]\n  Mutant 3: <span class="ld-warn">return → return false</span>               [KILLED]\n\n<span class="ld-key">Mutation score: <span class="ld-warn">33%</span></span>  ← below 80% threshold'
+  },
+  {
+    label: 'Step 4 — Surviving mutants injected into agent context',
+    content: '<span class="ld-comment">// Prompt augmentation — fed to agent:</span>\n<span class="ld-key">SURVIVING MUTANTS:</span>\n  1. <span class="ld-warn">includes(\'@\') → includes(\'\')</span>\n     → No test verifies the @ character specifically.\n  2. <span class="ld-warn">includes(\'@\') → !includes(\'@\')</span>\n     → No test checks multiple @ scenarios.\n\n<span class="ld-key">TASK:</span> <span class="ld-val">Write new tests to kill these mutants.</span>'
+  },
+  {
+    label: 'Step 5 — Agent writes targeted new tests',
+    content: '<span class="ld-comment">// Agent generates mutant-targeted tests</span>\n<span class="ld-key">test</span>(<span class="ld-val">\'@ is required, not empty string\'</span>, () => {\n  <span class="ld-key">expect</span>(validateEmail(<span class="ld-val">\'nodomain\'</span>)).toBe(<span class="ld-warn">false</span>); <span class="ld-comment">// kills M1</span>\n});\n<span class="ld-key">test</span>(<span class="ld-val">\'double @ is invalid\'</span>, () => {\n  <span class="ld-key">expect</span>(validateEmail(<span class="ld-val">\'a@@b.com\'</span>)).toBe(<span class="ld-warn">false</span>); <span class="ld-comment">// kills M2</span>\n});\n<span class="ld-comment">// Re-running mutation engine...</span>'
+  },
+  {
+    label: 'Step 6 — Score gate evaluation',
+    content: '<span class="ld-key">$</span> <span class="ld-val">stryker run --files validateEmail.js</span>\n\n  Mutant 1: <span class="ld-ok">[KILLED]</span> ✓\n  Mutant 2: <span class="ld-ok">[KILLED]</span> ✓\n  Mutant 3: <span class="ld-ok">[KILLED]</span> ✓\n\n<span class="ld-key">Mutation score: <span class="ld-ok">100%</span></span> ✓ Gate passed (threshold: 80%)\n<span class="ld-comment">// Loop complete after 1 iteration. Agent done.</span>'
+  }
+];
+
+function loopNext() {
+  if (loopStep > 0) {
+    var prev = document.getElementById('ls'+(loopStep-1));
+    if (prev) { prev.classList.remove('active'); prev.classList.add('done'); }
+  }
+  var cur = document.getElementById('ls'+loopStep);
+  if (cur) cur.classList.add('active');
+
+  var s = loopSteps[loopStep];
+  document.getElementById('loopDetail').innerHTML =
+    '<span class="ld-comment">// ' + s.label + '</span>\n' + s.content;
+  document.getElementById('loopIter').textContent = loopStep < 5 ? 'Iteration ' + loopIter + ' · Step ' + (loopStep+1) + ' of 6' : '✓ Loop complete';
+
+  loopStep++;
+  if (loopStep >= loopSteps.length) {
+    document.getElementById('loopBtn').style.display = 'none';
+    document.getElementById('loopReset').style.display = 'inline-flex';
+    document.getElementById('ls5').classList.remove('active');
+    document.getElementById('ls5').classList.add('done');
+  }
+}
+
+function loopReset() {
+  loopStep = 0; loopIter = 1;
+  for (var i=0;i<6;i++) {
+    var el = document.getElementById('ls'+i);
+    if (el) { el.classList.remove('active','done'); }
+  }
+  document.getElementById('ls0').classList.add('active');
+  document.getElementById('loopDetail').innerHTML = '<span class="ld-comment">// Ready — press Next Step to begin the loop</span>';
+  document.getElementById('loopIter').textContent = '';
+  document.getElementById('loopBtn').style.display = 'inline-flex';
+  document.getElementById('loopReset').style.display = 'none';
+}
+
+// ══════════════════════════════════════════
+// DEMO 4: SCORE HALLUCINATION
+// ══════════════════════════════════════════
+var hallLines = [
+  { delay: 0,    html: '<span class="t-prompt">$</span> <span class="t-cmd">agent run --task "improve test coverage" --auto-commit</span>' },
+  { delay: 600,  html: '<span class="t-agent">Agent:</span> Analysing source files...' },
+  { delay: 1200, html: '<span class="t-agent">Agent:</span> Running existing test suite... 47 tests passing.' },
+  { delay: 1900, html: '<span class="t-agent">Agent:</span> Generating additional tests for surviving mutants...' },
+  { delay: 2700, html: '<span class="t-tool">Tool:</span>  stryker run --reporter json' },
+  { delay: 3400, html: '<span class="t-agent">Agent:</span> Writing 6 new test cases targeting identified gaps...' },
+  { delay: 4200, html: '<span class="t-tool">Tool:</span>  stryker run --reporter json <span class="t-muted">(final run)</span>' },
+  { delay: 5100, html: '<span class="t-agent">Agent:</span> ✓ Task complete. Final mutation score: <strong style="color:#7ee787">96.30%</strong>' },
+  { delay: 5800, html: '<span class="t-agent">Agent:</span> Tests are comprehensive. Ready to commit and ship.' },
+  { delay: 6600, html: '<span class="t-warn">⚠  Independent verification running...</span>' },
+  { delay: 7400, html: '<span class="t-tool">Tool:</span>  Stryker JSON output → mutationScore: <strong style="color:#f85149">94.44%</strong>' },
+  { delay: 8200, html: '<span class="t-warn">⚠  DISCREPANCY: Agent reported 96.30% · Actual: 94.44% · Delta: 1.86%</span>' },
+];
+var hallRunning = false;
+
+function hallRun() {
+  if (hallRunning) return;
+  hallRunning = true;
+  document.getElementById('hallBtn').disabled = true;
+  document.getElementById('hallTerm').innerHTML = '';
+  var lines = [];
+  hallLines.forEach(function(l, i) {
+    setTimeout(function() {
+      lines.push(l.html);
+      document.getElementById('hallTerm').innerHTML = lines.join('<br>');
+      if (i === hallLines.length - 1) {
+        document.getElementById('hallCompare').style.display = 'block';
+        document.getElementById('hallReset').style.display = 'inline-flex';
+      }
+    }, l.delay);
+  });
+}
+
+function hallReset() {
+  hallRunning = false;
+  document.getElementById('hallTerm').innerHTML = '<span class="t-muted">// Press Run Pipeline to see the agent work</span>';
+  document.getElementById('hallCompare').style.display = 'none';
+  document.getElementById('hallBtn').disabled = false;
+  document.getElementById('hallReset').style.display = 'none';
+}
+
+// ══════════════════════════════════════════
+// DEMO 5: EQUIVALENT MUTANT CLASSIFIER
+// ══════════════════════════════════════════
+var eqData = [
+  {
+    original: 'function abs(n) {\n  if (n < 0) return -n;\n  return n;\n}',
+    mutant:   'function abs(n) {\n  if (n <= 0) return -n;\n  return n;\n}',
+    answer: 'equiv',
+    explanation: 'Equivalent mutant. When n === 0, the original returns 0 and the mutant returns -0. In JavaScript, -0 === 0 is true, so no correct test can distinguish them. This mutant is unkillable.'
+  },
+  {
+    original: 'function max(a, b) {\n  return a > b ? a : b;\n}',
+    mutant:   'function max(a, b) {\n  return a >= b ? a : b;\n}',
+    answer: 'equiv',
+    explanation: 'Equivalent mutant. When a === b, both the original and mutant return the same value (a or b, which are equal). No observable difference. An agent that wastes time on this will never kill it.'
+  },
+  {
+    original: 'function divide(a, b) {\n  if (b === 0) throw new Error();\n  return a / b;\n}',
+    mutant:   'function divide(a, b) {\n  if (b === 0) throw new Error();\n  return a * b;\n}',
+    answer: 'kill',
+    explanation: 'Killable. a / b was mutated to a * b. Any test like expect(divide(10, 2)).toBe(5) immediately kills this — division and multiplication give very different results.'
+  },
+  {
+    original: 'function isAdult(age) {\n  return age >= 18;\n}',
+    mutant:   'function isAdult(age) {\n  return age > 18;\n}',
+    answer: 'kill',
+    explanation: 'Killable. The boundary case age === 18 exposes the difference: the original returns true, the mutant returns false. A test expect(isAdult(18)).toBe(true) kills it. Boundary tests are critical for relational operator mutations.'
+  }
+];
+
+var eqAnswered = [false,false,false,false];
+var eqCorrect = 0;
+
+function renderEqCards() {
+  var html = '';
+  eqData.forEach(function(q, i) {
+    html +=
+      '<div class="eq-card" id="eqcard'+i+'">' +
+      '<div style="font-size:0.82rem;font-weight:700;margin-bottom:0.5rem;color:var(--ink)">Mutant '+(i+1)+'</div>' +
+      '<div class="eq-card-code">' +
+        '<div class="eq-snippet"><span class="snip-label">Original</span><pre>' + q.original + '</pre></div>' +
+        '<div class="eq-snippet"><span class="snip-label">Mutant</span><pre>' + q.mutant + '</pre></div>' +
+      '</div>' +
+      '<div class="eq-btn-row">' +
+        '<button class="eq-vote kill-btn" id="eqkill'+i+'" onclick="eqVote('+i+',\'kill\')">⚔ A good test can kill this</button>' +
+        '<button class="eq-vote equiv-btn" id="eqequiv'+i+'" onclick="eqVote('+i+',\'equiv\')">≡ Equivalent — unkillable</button>' +
+      '</div>' +
+      '<div class="eq-reveal" id="eqrev'+i+'"></div>' +
+      '</div>';
+  });
+  document.getElementById('eqCards').innerHTML = html;
+}
+
+function eqVote(i, choice) {
+  if (eqAnswered[i]) return;
+  eqAnswered[i] = true;
+  var q = eqData[i];
+  var correct = choice === q.answer;
+  if (correct) eqCorrect++;
+  document.getElementById('eqkill'+i).disabled = true;
+  document.getElementById('eqequiv'+i).disabled = true;
+  var reveal = document.getElementById('eqrev'+i);
+  reveal.textContent = (correct ? '✓ ' : '✗ ') + q.explanation;
+  reveal.className = 'eq-reveal show ' + (q.answer === 'kill' ? 'kill-result' : 'equiv-result');
+  document.getElementById('eqcard'+i).classList.add(q.answer === 'kill' ? 'revealed-kill' : 'revealed-equiv');
+  var done = eqAnswered.filter(Boolean).length;
+  document.getElementById('eqTally').textContent = done === eqData.length
+    ? 'Final score: ' + eqCorrect + '/' + eqData.length + ' — ' + (eqCorrect >= 3 ? 'You think like a seasoned practitioner.' : 'Equivalent mutants are genuinely tricky — keep going!')
+    : done + ' of ' + eqData.length + ' answered';
+}
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', function() {
+  showTcDetail('mutation');
+  renderQuiz();
+  renderEqCards();
+  loopReset();
+});
+</script>
+</body>
+</html>
