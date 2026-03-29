@@ -1,5 +1,6 @@
 # Journal of Combinatory Play
 https://journal-of-combinatory-play.k-thirukumaran.workers.dev/
+
 A public notebook for exploring ideas at the intersection of generative AI, deep research, and creative recombination.
 This space exists for a few simple reasons called out below.
 
