@@ -1,5 +1,5 @@
 /**
- * theme.js — Solarized theme toggle
+ * theme.js — Solarized theme+  toggle. Created by a Claude session
  *
  * Usage: <script src="js/theme.js" defer></script>
  *
